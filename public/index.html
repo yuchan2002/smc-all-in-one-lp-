@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMC All-in-One | 機関投資家のエントリーゾーンを自動検出</title>
+<meta name="description" content="Supply/Demand・BOS・MSB・Order Blockを自動描画するTradingView用インジケーター。動画講義6章付き。">
+
+<!-- OGP: デプロイ後、実ドメインに差し替えてください(現在は仮URL) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SMC All-in-One">
+<meta property="og:title" content="SMC All-in-One | 機関投資家のエントリーゾーンを自動検出">
+<meta property="og:description" content="Supply/Demand・BOS・MSB・Order Blockを自動描画するTradingView用インジケーター。動画講義6章付き。">
+<meta property="og:url" content="https://YOUR-DOMAIN.up.railway.app/">
+<meta property="og:image" content="https://YOUR-DOMAIN.up.railway.app/img/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SMC All-in-One | 機関投資家のエントリーゾーンを自動検出">
+<meta name="twitter:description" content="Supply/Demand・BOS・MSB・Order Blockを自動描画するTradingView用インジケーター。動画講義6章付き。">
+<meta name="twitter:image" content="https://YOUR-DOMAIN.up.railway.app/img/ogp.jpg">
+
+<!-- Favicon -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ============ TOKENS ============ */
+  :root{
+    --bg:      #0b0e13;
+    --bg-2:    #121722;
+    --line:    #242c3c;
+    --ink:     #dfe6ef;
+    --sub:     #8b94a5;
+    --cyan:    #00ffff;
+    --gold:    #e8c15a;
+    --green:   #2ecc71;
+    --red:     #ff5470;
+    --maxw:    760px;
+    --f-disp:  "Chakra Petch", "Noto Sans JP", sans-serif;
+    --f-body:  "Noto Sans JP", system-ui, sans-serif;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:var(--f-body); font-size:15px; line-height:1.9;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color:var(--cyan); }
+
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 22px; }
+  section{ padding:72px 0 0; }
+  .rule{ border-top:1px solid var(--line); }
+
+  /* ============ TYPE ============ */
+  .eyebrow{
+    display:inline-block; font-family:var(--f-disp); font-weight:700;
+    font-size:12px; letter-spacing:2.5px; padding:5px 14px; border-radius:3px;
+    color:var(--bg); background:var(--cyan); margin-bottom:20px;
+  }
+  .eyebrow--gold{ background:var(--gold); }
+  .eyebrow--green{ background:var(--green); color:#04140a; }
+  h1{ font-size:clamp(26px,5.6vw,34px); font-weight:900; line-height:1.55; letter-spacing:.01em; }
+  h2{ font-size:clamp(21px,4.4vw,25px); font-weight:900; line-height:1.6; margin-bottom:14px; }
+  .accent-c{ color:var(--cyan); } .accent-g{ color:var(--gold); } .accent-gr{ color:var(--green); }
+  .lead{ color:var(--sub); margin:0 0 30px; }
+  .note{ color:#6a7383; font-size:12.5px; }
+
+  /* ============ HEADER ============ */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,14,19,.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .hd{ display:flex; align-items:center; justify-content:space-between; height:56px; }
+  .hd-logo{ font-family:var(--f-disp); font-weight:700; letter-spacing:2px; font-size:14px; color:var(--ink); text-decoration:none; }
+  .hd-logo b{ color:var(--cyan); }
+  .hd-cta{
+    font-size:13px; font-weight:700; color:var(--bg); background:var(--cyan);
+    text-decoration:none; padding:8px 18px; border-radius:4px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .hd-cta:hover{ transform:translateY(-1px); box-shadow:0 4px 18px rgba(0,255,255,.35); }
+
+  /* ============ HERO ============ */
+  .hero{ text-align:center; padding:64px 0 0; position:relative; overflow:hidden; }
+  .hero-chart{ margin:34px auto 0; max-width:680px; border:1px solid var(--line); border-radius:10px; background:var(--bg-2); overflow:hidden; }
+  .hero-chart svg{ display:block; width:100%; height:auto; }
+  .hero-video{ margin:26px auto 0; max-width:680px; }
+  .video-frame{ position:relative; width:100%; padding-top:56.25%; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#000; }
+  .video-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+  /* ============ CTA BUTTON ============ */
+  .cta-btn{
+    display:inline-block; font-weight:900; font-size:17px; text-decoration:none;
+    color:var(--bg); background:linear-gradient(135deg, var(--cyan), #3ad9ff);
+    padding:18px 46px; border-radius:6px; letter-spacing:.02em;
+    box-shadow:0 6px 30px rgba(0,255,255,.28);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .cta-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 38px rgba(0,255,255,.42); }
+  .cta-btn small{ display:block; font-size:11.5px; font-weight:700; opacity:.75; letter-spacing:.06em; }
+  .cta-under{ margin-top:12px; font-size:12px; color:var(--sub); }
+
+  /* ============ CARDS ============ */
+  .card{
+    background:var(--bg-2); border:1px solid var(--line); border-radius:8px;
+    padding:26px; margin-bottom:16px;
+  }
+  .card--c{ border-top:3px solid var(--cyan); }
+  .card--g{ border-top:3px solid var(--green); }
+  .mod-label{ color:var(--sub); font-family:var(--f-disp); font-size:11px; letter-spacing:1.5px; margin-bottom:8px; }
+  .mod-title{ font-size:19px; font-weight:900; margin-bottom:14px; }
+  .card p{ font-size:14px; color:var(--sub); }
+
+  /* 画像プレースホルダー(実画像を img/ に置くと自動で差し替わる) */
+  .shot{ border:1px solid var(--line); border-radius:8px; overflow:hidden; margin:14px 0 4px; background:#0d1118; }
+  .shot .ph{
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
+    aspect-ratio:16/9; color:#4a5568; font-size:12.5px; letter-spacing:.08em;
+    background:
+      repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,.02) 14px 28px),
+      radial-gradient(120% 120% at 30% 20%, rgba(0,255,255,.06), transparent 60%),
+      #0d1118;
+  }
+  .shot .ph b{ font-family:var(--f-disp); letter-spacing:2px; color:#5b6778; }
+
+  /* ============ INSTRUMENTS ============ */
+  .inst{ display:grid; gap:0; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .inst-row{ display:grid; grid-template-columns:150px 92px 1fr; gap:14px; align-items:baseline; padding:14px 20px; background:var(--bg-2); }
+  .inst-row + .inst-row{ border-top:1px solid var(--line); }
+  .inst-sym{ font-family:var(--f-disp); font-size:12px; color:var(--gold); letter-spacing:.06em; }
+  .inst-name{ font-weight:700; font-size:14px; }
+  .inst-desc{ font-size:13px; color:var(--sub); }
+  @media(max-width:560px){ .inst-row{ grid-template-columns:1fr; gap:2px; } }
+
+  /* ============ COURSE ============ */
+  .lec{ background:var(--bg-2); border:1px solid var(--line); border-radius:8px; padding:18px 22px; margin-bottom:10px; }
+  .lec b{ font-size:15px; }
+  .lec .no{ font-family:var(--f-disp); color:var(--cyan); font-weight:700; margin-right:10px; }
+  .lec p{ font-size:13px; color:var(--sub); margin-top:2px; }
+
+  /* ============ PRICE ============ */
+  .price-card{
+    border:1px solid var(--line); border-top:3px solid var(--gold);
+    background:linear-gradient(180deg, #141a28, var(--bg-2));
+    border-radius:10px; padding:38px 30px; text-align:center;
+  }
+  .price-name{ font-family:var(--f-disp); letter-spacing:2px; font-size:13px; color:var(--gold); margin-bottom:14px; }
+  .price-items{ list-style:none; margin:0 auto 26px; max-width:420px; text-align:left; }
+  .price-items li{ padding:10px 0 10px 30px; border-bottom:1px dashed var(--line); font-size:14px; position:relative; }
+  .price-items li::before{ content:"✓"; position:absolute; left:4px; color:var(--cyan); font-weight:900; }
+  .price-num{ font-family:var(--f-disp); font-size:44px; font-weight:700; line-height:1.2; }
+  .price-num small{ font-size:16px; margin-left:4px; color:var(--sub); font-family:var(--f-body); }
+  .price-strike{ color:var(--sub); text-decoration:line-through; font-size:15px; }
+  .pay-icons{ margin-top:14px; font-size:12px; color:var(--sub); letter-spacing:.04em; }
+
+  /* ============ FAQ ============ */
+  details{ background:var(--bg-2); border:1px solid var(--line); border-radius:8px; margin-bottom:10px; }
+  summary{ cursor:pointer; padding:18px 22px; font-weight:700; list-style:none; position:relative; padding-right:44px; }
+  summary::-webkit-details-marker{ display:none; }
+  summary::after{ content:"+"; position:absolute; right:20px; top:14px; font-size:20px; color:var(--cyan); transition:transform .2s; }
+  details[open] summary::after{ transform:rotate(45deg); }
+  details .a{ padding:0 22px 18px; font-size:13.5px; color:var(--sub); }
+
+  /* ============ FOOTER ============ */
+  .legal{ color:#6a7383; font-size:11.5px; line-height:2; padding:36px 0 120px; }
+  .legal b{ color:#8b94a5; }
+  .legal-links{ margin-top:16px; }
+  .legal-links a{ color:#8b94a5; margin-right:18px; font-size:12px; }
+
+  /* ============ STICKY MOBILE CTA ============ */
+  .sticky-cta{
+    position:fixed; left:0; right:0; bottom:0; z-index:60;
+    background:rgba(11,14,19,.92); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    transform:translateY(110%); transition:transform .3s ease;
+  }
+  .sticky-cta.show{ transform:translateY(0); }
+  .sticky-price{ font-family:var(--f-disp); font-weight:700; font-size:17px; }
+  .sticky-price small{ display:block; font-family:var(--f-body); font-weight:400; font-size:10.5px; color:var(--sub); letter-spacing:.04em; }
+  .sticky-cta .cta-btn{ padding:12px 26px; font-size:14px; box-shadow:none; white-space:nowrap; }
+
+  /* ============ MOTION ============ */
+  .rv{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+  .rv.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .rv{ opacity:1; transform:none; transition:none; }
+    .dash{ animation:none !important; }
+  }
+  /* hero chart line draw */
+  .dash{ stroke-dasharray:1200; stroke-dashoffset:1200; animation:draw 2.4s ease forwards .3s; }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+  .zone-pulse{ animation:pulse 3s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:.16; } 50%{ opacity:.30; } }
+  a:focus-visible, summary:focus-visible, button:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  設定:ここだけ書き換えれば運用できます
+============================================================ -->
+<script>
+  const CONFIG = {
+    // Stripeダッシュボード > 商品 > 支払いリンク で発行したURLを貼る
+    STRIPE_PAYMENT_LINK: "https://buy.stripe.com/XXXXXXXXXXXX",
+    PRICE: 49800,               // 税込価格(数字のみ)
+    PRICE_BEFORE: null,         // 打ち消し線の旧価格。無ければ null (例: 69800)
+    PRODUCT_NAME: "SMC All-in-One",
+  };
+</script>
+
+<header>
+  <div class="wrap hd">
+    <a class="hd-logo" href="#top">SMC <b>ALL-IN-ONE</b></a>
+    <a class="hd-cta js-pay" href="#price">今すぐ手に入れる</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero wrap">
+    <span class="eyebrow">SMC ALL-IN-ONE</span>
+    <h1>95%のトレーダーは負け、<br>チャート分析を<span class="accent-c">丸投げ</span>した人間から<br>勝ち始める。</h1>
+
+    <!-- 製品の出力そのものをヒーローに:ゾーン検出チャート -->
+    <div class="hero-chart" aria-hidden="true">
+      <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="サプライ・デマンドゾーンとBOSを自動描画したチャートのイメージ">
+        <rect width="680" height="300" fill="#121722"/>
+        <!-- grid -->
+        <g stroke="#1b2333" stroke-width="1">
+          <line x1="0" y1="75" x2="680" y2="75"/><line x1="0" y1="150" x2="680" y2="150"/><line x1="0" y1="225" x2="680" y2="225"/>
+        </g>
+        <!-- Supply zone -->
+        <rect class="zone-pulse" x="330" y="52" width="350" height="34" fill="#ff5470" opacity=".18"/>
+        <text x="342" y="74" font-family="Chakra Petch" font-size="11" fill="#ff8aa0" letter-spacing="2">SUPPLY</text>
+        <!-- Demand zone -->
+        <rect class="zone-pulse" x="70" y="216" width="610" height="36" fill="#00ffff" opacity=".16" style="animation-delay:1.5s"/>
+        <text x="82" y="240" font-family="Chakra Petch" font-size="11" fill="#7ff7f7" letter-spacing="2">DEMAND&#160;/&#160;ORDER&#160;BLOCK</text>
+        <!-- BOS line -->
+        <line x1="180" y1="128" x2="470" y2="128" stroke="#e8c15a" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="476" y="132" font-family="Chakra Petch" font-size="11" fill="#e8c15a" letter-spacing="2">BOS</text>
+        <!-- candles -->
+        <g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="90" y1="200" x2="90" y2="250"/><rect x="84" y="210" width="12" height="30"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="118" y1="205" x2="118" y2="245"/><rect x="112" y="212" width="12" height="24"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="146" y1="180" x2="146" y2="240"/><rect x="140" y="190" width="12" height="42"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="174" y1="150" x2="174" y2="200"/><rect x="168" y="158" width="12" height="36"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="202" y1="160" x2="202" y2="205"/><rect x="196" y="166" width="12" height="30"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="230" y1="120" x2="230" y2="185"/><rect x="224" y="128" width="12" height="48"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="258" y1="96" x2="258" y2="140"/><rect x="252" y="102" width="12" height="30"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="286" y1="100" x2="286" y2="150"/><rect x="280" y="106" width="12" height="36"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="314" y1="118" x2="314" y2="170"/><rect x="308" y="124" width="12" height="38"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="342" y1="140" x2="342" y2="195"/><rect x="336" y="150" width="12" height="38"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="370" y1="150" x2="370" y2="215"/><rect x="364" y="158" width="12" height="48"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="398" y1="190" x2="398" y2="248"/><rect x="392" y="200" width="12" height="40"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="426" y1="170" x2="426" y2="235"/><rect x="420" y="178" width="12" height="48"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="454" y1="130" x2="454" y2="185"/><rect x="448" y="138" width="12" height="40"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="482" y1="120" x2="482" y2="165"/><rect x="476" y="126" width="12" height="32"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="510" y1="88" x2="510" y2="140"/><rect x="504" y="96" width="12" height="36"/></g>
+          <g stroke="#2ecc71" fill="#2ecc71"><line x1="538" y1="62" x2="538" y2="110"/><rect x="532" y="70" width="12" height="34"/></g>
+          <g stroke="#ff5470" fill="#ff5470"><line x1="566" y1="66" x2="566" y2="118"/><rect x="560" y="72" width="12" height="38"/></g>
+        </g>
+        <!-- entry arrow -->
+        <path class="dash" d="M 398 258 L 398 268 L 470 268" stroke="#00ffff" stroke-width="2" fill="none"/>
+        <text x="476" y="272" font-family="Chakra Petch" font-size="11" fill="#00ffff" letter-spacing="2">ENTRY</text>
+      </svg>
+    </div>
+
+    <!-- 紹介動画 -->
+    <div class="hero-video">
+      <div class="video-frame">
+        <iframe src="https://www.youtube.com/embed/-Evtm9zBQNc" title="SMC All-in-One 紹介動画" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <p style="margin-top:34px;">
+      <a class="cta-btn js-pay" href="#price">SMC All-in-Oneを手に入れる<small class="js-price-inline"></small></a>
+    </p>
+    <p class="cta-under">クレジットカード決済(Stripe) / 決済後すぐに導入手順をご案内</p>
+  </section>
+
+  <!-- ============ SOLUTION ============ -->
+  <section class="wrap rule rv">
+    <span class="eyebrow">SOLUTION</span>
+    <h2>環境認識も、ゾーン引きも、構造判定も。<br><span class="accent-c">全部インジに丸投げ</span>してください。</h2>
+    <div class="shot"><img data-fallback src="img/solution.webp" alt="SMC All-in-Oneの表示イメージ"></div>
+    <p class="lead" style="margin-top:20px;">SMC All-in-Oneは、機関投資家のエントリーゾーンを検出する2系統のエンジンを1本に統合したTradingView用インジケーター(Pine Script v5)です。<b style="color:var(--ink);">パラメータは完全調整済み</b>——チャートに入れた瞬間、あなたが30分かけていた分析が終わった状態から始まります。あなたの仕事は「表示されたゾーンで待つ」。それだけです。</p>
+
+    <div class="card card--c rv">
+      <div class="mod-label">MODULE_01</div>
+      <div class="mod-title"><span class="accent-c">Supply / Demand</span> + BOS ゾーン検出エンジン</div>
+      <div class="shot"><img data-fallback src="img/module1.webp" alt="Supply/Demand + BOS 検出エンジンの表示"></div>
+    </div>
+
+    <div class="card card--g rv">
+      <div class="mod-label">MODULE_02</div>
+      <div class="mod-title"><span class="accent-gr">MSB + Order Block</span> 構造転換検出エンジン</div>
+      <div class="shot"><img data-fallback src="img/module2.webp" alt="MSB + Order Block 検出エンジンの表示"></div>
+    </div>
+  </section>
+
+  <!-- ============ RISK REWARD ============ -->
+  <section class="wrap rule rv">
+    <span class="eyebrow eyebrow--gold">RISK : REWARD</span>
+    <h2>爆益の申し子。<br>RR<span class="accent-g">1:5〜1:10</span>を狙う、損小利大の設計。</h2>
+    <div class="shot"><img data-fallback src="img/rr.webp" alt="リスクリワード1:5〜1:10のトレード例"></div>
+
+    <div class="inst" style="margin-top:24px;">
+      <div class="inst-row"><span class="inst-sym">XAUUSD</span><span class="inst-name">ゴールド</span><span class="inst-desc">ボラが大きくゾーン反応が明確。</span></div>
+      <div class="inst-row"><span class="inst-sym">US30 / NAS100 / JP225</span><span class="inst-name">株式指数</span><span class="inst-desc">機関の資金が最も集まる市場。構造判定と好相性。</span></div>
+      <div class="inst-row"><span class="inst-sym">OIL / SILVER</span><span class="inst-name">コモディティ</span><span class="inst-desc">原油・銀などトレンドの出る銘柄でそのまま機能。</span></div>
+      <div class="inst-row"><span class="inst-sym">EURUSD / USDJPY…</span><span class="inst-name">FX主要通貨</span><span class="inst-desc">TradingViewの全銘柄・全時間足に対応。</span></div>
+    </div>
+  </section>
+
+  <!-- ============ VIDEO COURSE ============ -->
+  <section class="wrap rule rv">
+    <span class="eyebrow eyebrow--gold">VIDEO COURSE</span>
+    <h2>インジは「答え」を表示する。<br>講義は「使い方」を叩き込む。</h2>
+    <p class="lead">ゾーンが見えても、どこで入りどこで逃げるかが分からなければ意味がありません。付属の動画講義では、このインジケーターを前提とした<b style="color:var(--ink);">エントリーからエグジットまでの一貫したルール</b>を解説します。</p>
+
+    <div class="lec rv"><span class="no">01</span><b>SMCの全体像と「機関の視点」</b><p>なぜサプライ/デマンドに価格が反応するのか。ゾーンの背後にある注文の仕組みから理解します。</p></div>
+    <div class="lec rv"><span class="no">02</span><b>インジケーターの導入と推奨設定</b><p>TradingViewへの導入手順、モジュール切替、銘柄・時間足ごとの使い分けを解説。</p></div>
+    <div class="lec rv"><span class="no">03</span><b>MSB / BOSで環境認識を固定する</b><p>上位足の構造転換を起点に、その日の方向性バイアスを決めるプロセスを実チャートで解説。</p></div>
+    <div class="lec rv"><span class="no">04</span><b>オーダーブロックのエントリートリガー</b><p>OB・ブレイカーブロックへのリテストをどう待ち、どのローソク足で入るか。エントリーの型を定義します。</p></div>
+    <div class="lec rv"><span class="no">05</span><b>損切り・利確・分割決済のルール</b><p>ゾーンを基準にしたSL/TP設計。サプライ手前での利確判断など、出口の一貫性を作ります。</p></div>
+    <div class="lec rv"><span class="no">06</span><b>実戦ケーススタディ(XAUUSD中心)</b><p>実際の相場で、インジの表示からエントリー・決済までの流れを通しで検証します。</p></div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="wrap rule rv">
+    <span class="eyebrow eyebrow--green">RESULTS</span>
+    <h2>すでに使っているメンバーからの<br>利確報告が届いています。</h2>
+    <p class="note" style="margin-bottom:26px;">※コミュニティ内で共有された報告の一部です。成果には個人差があり、利益を保証するものではありません。</p>
+    <div class="shot rv"><img data-fallback src="img/result1.webp" alt="利用者の利確報告 1"></div>
+    <div class="shot rv"><img data-fallback src="img/result2.webp" alt="利用者の利確報告 2"></div>
+    <div class="shot rv"><img data-fallback src="img/result3.webp" alt="利用者の利確報告 3"></div>
+  </section>
+
+  <!-- ============ PRICE ============ -->
+  <section class="wrap rule rv" id="price">
+    <div style="text-align:center;">
+      <span class="eyebrow eyebrow--gold">SET CONTENTS</span>
+      <h2>SMC All-in-One<br>インジケーター＋動画講義セット</h2>
+    </div>
+
+    <div class="price-card">
+      <div class="price-name">SMC ALL-IN-ONE / FULL SET</div>
+      <ul class="price-items">
+        <li>SMC All-in-One 本体(TradingView / Pine Script v5)</li>
+        <li>Supply/Demand + BOS 検出エンジン</li>
+        <li>MSB + Order Block 構造転換エンジン</li>
+        <li>動画講義 全6章(導入〜実戦ケーススタディ)</li>
+        <li>アップデート無償提供</li>
+      </ul>
+      <div class="price-strike js-price-before" hidden></div>
+      <div class="price-num"><span class="js-price"></span><small>(税込)</small></div>
+      <p style="margin:22px 0 0;">
+        <a class="cta-btn js-pay" href="#">今すぐ手に入れる<small>カード決済 / 即時アクセス</small></a>
+      </p>
+      <div class="pay-icons">VISA / Mastercard / AMEX / JCB — powered by Stripe</div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="wrap rule rv">
+    <h2 style="font-size:20px; margin-bottom:22px;">よくある質問</h2>
+    <details><summary>TradingViewの有料プランは必要ですか？</summary><div class="a">無料プランでも動作します。導入手順は講義の第2章で画面を見ながら解説しています。</div></details>
+    <details><summary>SMC初心者でも使えますか？</summary><div class="a">はい。ゾーンやBOSはインジケーターが自動描画するため、「どこに引くか」で悩む必要がありません。講義は基礎概念から始まります。</div></details>
+    <details><summary>仕事があってチャートに張り付けません。それでも使えますか？</summary><div class="a">むしろそういう方のためのツールです。表示されたゾーンにアラートを仕掛けておけば、張り付かずに「ゾーンに来たら見る」運用が可能です。</div></details>
+    <details><summary>売買を自動で行うツールですか？</summary><div class="a">いいえ。本製品は分析補助のためのインジケーターと教育用の動画講義であり、自動売買(EA)や投資助言を行うものではありません。売買の最終判断はご自身で行っていただきます。</div></details>
+    <details><summary>購入後の流れを教えてください。</summary><div class="a">決済完了後、ご登録のメールアドレス宛にTradingViewへのアクセス権付与の手順と、動画講義の視聴URLをお送りします。TradingViewのユーザー名をご返信いただくと、通常24時間以内にインジケーターが利用可能になります。</div></details>
+  </section>
+
+  <!-- ============ LEGAL ============ -->
+  <footer class="wrap rule">
+    <div class="legal">
+      <b>【免責事項】</b><br>
+      ・本製品はチャート分析を補助するインジケーターおよび教育コンテンツであり、投資助言を行うものではありません。<br>
+      ・掲載している利用者の報告は個人の感想・実績であり、将来の利益や成果を保証するものではありません。成果には個人差があります。<br>
+      ・FX・CFD取引は元本を超える損失が発生する可能性があります。取引はご自身の判断と責任において行ってください。
+      <div class="legal-links">
+        <a href="tokushoho.html">特定商取引法に基づく表記</a>
+        <a href="privacy.html">プライバシーポリシー</a>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<!-- ============ STICKY MOBILE CTA ============ -->
+<div class="sticky-cta" id="stickyCta">
+  <div class="sticky-price"><span class="js-price"></span><small>インジ本体+講義6章</small></div>
+  <a class="cta-btn js-pay" href="#">手に入れる</a>
+</div>
+
+<script>
+  // ---- 価格の描画 ----
+  const yen = n => "¥" + n.toLocaleString("ja-JP");
+  document.querySelectorAll(".js-price").forEach(el => el.textContent = yen(CONFIG.PRICE));
+  document.querySelectorAll(".js-price-inline").forEach(el => el.textContent = yen(CONFIG.PRICE) + "(税込)");
+  if (CONFIG.PRICE_BEFORE) {
+    const b = document.querySelector(".js-price-before");
+    b.hidden = false; b.textContent = "通常価格 " + yen(CONFIG.PRICE_BEFORE);
+  }
+
+  // ---- 決済ボタン:全CTAをStripe Payment Linkへ ----
+  document.querySelectorAll(".js-pay").forEach(a => {
+    // ヘッダー/ヒーローのボタンは価格セクションへスクロール、価格カード内は直接決済
+    const inPrice = a.closest("#price") || a.closest("#stickyCta");
+    if (inPrice) {
+      a.href = CONFIG.STRIPE_PAYMENT_LINK;
+      a.target = "_blank"; a.rel = "noopener";
+    }
+  });
+
+  // ---- 画像プレースホルダー(img/ に実画像を置けば表示される) ----
+  document.querySelectorAll("img[data-fallback]").forEach(img => {
+    img.addEventListener("error", () => {
+      const ph = document.createElement("div");
+      ph.className = "ph";
+      ph.innerHTML = "<b>IMAGE</b><span>" + (img.getAttribute("alt") || "チャート画像") + "(img/フォルダに画像を配置)</span>";
+      img.replaceWith(ph);
+    });
+  });
+
+  // ---- スクロールリビール ----
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+  }), { threshold: .12 });
+  document.querySelectorAll(".rv").forEach(el => io.observe(el));
+
+  // ---- モバイル固定CTA(価格セクション通過前のみ表示) ----
+  const sticky = document.getElementById("stickyCta");
+  const priceSec = document.getElementById("price");
+  const onScroll = () => {
+    const passedHero = window.scrollY > 500;
+    const priceVisible = priceSec.getBoundingClientRect().top < window.innerHeight;
+    sticky.classList.toggle("show", passedHero && !priceVisible);
+  };
+  addEventListener("scroll", onScroll, { passive: true }); onScroll();
+</script>
+</body>
+</html>

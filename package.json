@@ -1,0 +1,11 @@
+{
+  "name": "smc-all-in-one-lp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "images": "node scripts/process-images.js"
+  },
+  "dependencies": { "express": "^4.19.2" },
+  "devDependencies": { "sharp": "^0.33.5" }
+}
